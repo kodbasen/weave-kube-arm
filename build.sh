@@ -61,7 +61,7 @@ wka:init
 wka:clone "weave"
 wka:clone "weave-kube"
 wka:clone "weave-npc"
-wka:patch_files ${WORKDIR} "golang" "armhfbuild/golang"
+wka:patch_files ${WORKDIR} "golang:1.5.2" "armhfbuild/golang:1.5.3"
 wka:patch_files ${WORKDIR} "weaveworks" "kodbasen"
 wka:patch_files ${WORKDIR} "alpine" "armhfbuild/alpine"
 wka:grep_files
