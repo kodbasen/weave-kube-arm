@@ -41,6 +41,14 @@ wka:replace_image() {
   sed -i "s;^FROM ${2};FROM ${3};" "${1}"
 }
 
+wka:remove_race() {
+  wka:log "remove race parameter"
+  for i in $( grep -r -l "\-race" $WORKDIR ); do
+    echo $i
+    sed -i "s;-race;;" "${i}"
+  done
+}
+
 wka:list_images() {
   for i in $( grep -r --include=Dockerfile "FROM" $WORKDIR ); do
     wka:log "$i"
@@ -55,6 +63,7 @@ wka:replace_image_in_files ${WORKDIR} "golang:1.5.2" "armhfbuild/golang:1.5.3"
 wka:replace_image_in_files ${WORKDIR} "weaveworks" "kodbasen"
 wka:replace_image_in_files ${WORKDIR} "alpine" "armhfbuild/alpine"
 wka:list_images
+wka:remove_race
 #wka:grep ${WORKDIR}/weave-kube
 #wka:grep ${WORKDIR}/weave-npc
 #wka:patch_weave
