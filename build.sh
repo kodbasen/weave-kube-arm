@@ -30,12 +30,23 @@ wka:clone() {
 }
 
 wka:replace_image_in_files() {
-  wka:log "patching files in $1"
+  wka:log "replacing images in $1"
   for i in $( grep -r -l --include=Dockerfile "FROM $2" $1 ); do
-    wka:replace_image $i $2 $3
+    #wka:replace_image $i $2 $3
+    sed -i "s;^FROM ${2};FROM ${3};" "${i}"
   done
 }
 
+wka:replace_dockerhub_user_in_files() {
+  wka:log "replacing DOCKERHUB_USER in $1"
+  for i in $( grep -r -l --include=Makefile --include=weave --include=release "DOCKERHUB_USER" $1 ); do
+    #wka:replace_image $i $2 $3
+    sed -i "s;DOCKERHUB_USER=${2};DOCKERHUB_USER=${3};" "${i}"
+    sed -i "s;DOCKERHUB_USER:-${2};DOCKERHUB_USER:-${3};" "${i}"
+  done
+}
+
+# Remove
 wka:replace_image() {
   #wka:log "sed" "s;^FROM ${2};FROM ${3};" "${1}"
   sed -i "s;^FROM ${2};FROM ${3};" "${1}"
@@ -62,6 +73,7 @@ wka:clone "weave-npc"
 wka:replace_image_in_files ${WORKDIR} "golang:1.5.2" "armhfbuild/golang:1.5.3"
 wka:replace_image_in_files ${WORKDIR} "weaveworks" "kodbasen"
 wka:replace_image_in_files ${WORKDIR} "alpine" "armhfbuild/alpine"
+wka:replace_dockerhub_user_in_files ${WORKDIR} "weaveworks" "kodbasen"
 wka:list_images
 wka:remove_race
 #wka:grep ${WORKDIR}/weave-kube
