@@ -26,7 +26,7 @@ wka:clone() {
     return
   fi
   echo "cloning $1"
-  git clone https://github.com/weaveworks/weave $WORKDIR/$1
+  git clone https://github.com/weaveworks/$1 $WORKDIR/$1
 }
 
 wka:replace_image_in_files() {
@@ -41,6 +41,7 @@ wka:replace_dockerhub_user_in_files() {
   wka:log "replacing DOCKERHUB_USER in $1"
   for i in $( grep -r -l --include=Makefile --include=weave --include=release "DOCKERHUB_USER" $1 ); do
     sed -i "s;DOCKERHUB_USER=${2};DOCKERHUB_USER=${3};" "${i}"
+    sed -i "s;DH_ORG=${2};DH_ORG=${3};" "${i}"
     sed -i "s;DOCKERHUB_USER:-${2};DOCKERHUB_USER:-${3};" "${i}"
   done
 }
