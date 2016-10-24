@@ -142,15 +142,6 @@ wka:build_weave-kube() {
   wka:log "done building weave-kube..."
 }
 
-wka:build_weave-npc() {
-  wka:log "starting building weave-npc..."
-  cd ${WORKDIR}/weave-npc
-  docker run --rm -v "$PWD":/usr/src/weave-npc -w /usr/src/weave-npc armhfbuild/golang:1.5.3 bash -c make
-  cd ${BASEDIR}
-  make -C ${WORKDIR}/weave-npc cmd/weave-npc/weave-npc
-  wka:log "done building weave-npc..."
-}
-
 wka:init
 #wka:delete_images
 wka:clone "weave"
@@ -169,5 +160,5 @@ wka:sanity_check
 
 wka:log "starting building weave..."
 make -C ${WORKDIR}/weave
-#wka:build_weave-npc
+make -C ${WORKDIR}/weave-npc image
 #wka:build_weave-kube
