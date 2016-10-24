@@ -11,6 +11,7 @@ ARCH=${ARCH:-arm}
 WEAVE_VERSION="v1.7.2"
 K8S_VERSION="v1.4.0"
 GOPATH=$WORKDIR
+WEAVEDIR=$WORKDIR/src/github.com/weaveworks
 
 wka:init() {
   mkdir -p $WORKDIR
@@ -64,8 +65,8 @@ wka:clone_k8s() {
 
 wka:clone() {
   wka:log "cloning $1"
-  git clone https://github.com/weaveworks/$1 $WORKDIR/src/github.com/weaveworks/$1
-  git -C $WORKDIR/src/github.com/weaveworks/$1 checkout $WEAVE_VERSION
+  git clone https://github.com/weaveworks/$1 $WEAVEDIR/$1
+  git -C $WEAVEDIR/$1 checkout $WEAVE_VERSION
 }
 
 wka:replace_image_in_files() {
@@ -76,7 +77,7 @@ wka:replace_image_in_files() {
 }
 
 wka:replace_dockerhub_user_in_files() {
-  for i in $( grep -r -l -E "(DOCKERHUB_USER|DH_ORG)(=|:-|^(=$))" $WORKDIR ); do
+  for i in $( grep -r -l -E "(DOCKERHUB_USER|DH_ORG)(=|:-|^(=$))" $WEAVEDIR ); do
     wka:log "replacing DOCKERHUB_USER in $i"
     sed -i "s;DOCKERHUB_USER=weaveworks;DOCKERHUB_USER=kodbasen;" "${i}"
     sed -i "s;DH_ORG=weaveworks;DH_ORG=kodbasen;" "${i}"
@@ -85,7 +86,7 @@ wka:replace_dockerhub_user_in_files() {
 }
 
 wka:replace_image_in_shell_files() {
-  for i in $( grep -r -l -E "weaveworks/(weave|weaveexec|weavedb|weavebuild|weave-kube|weave-npc):" $WORKDIR ); do
+  for i in $( grep -r -l -E "weaveworks/(weave|weaveexec|weavedb|weavebuild|weave-kube|weave-npc):" $WEAVEDIR ); do
     wka:log "replacing images in shell file $i"
     sed -i "s;weaveworks/weave:;kodbasen/weave:;" "${i}"
     sed -i "s;weaveworks/weaveexec:;kodbasen/weaveexec:;" "${i}"
@@ -97,14 +98,14 @@ wka:replace_image_in_shell_files() {
 }
 
 wka:replace_docker_dist_url_in_files() {
-  for i in $( grep -r -l --include=Makefile "builds/Linux/x86_64" $WORKDIR ); do
+  for i in $( grep -r -l --include=Makefile "builds/Linux/x86_64" $WEAVEDIR ); do
     wka:log "replacing docker dist url in $i"
     sed -i "s;https://get.docker.com/builds/Linux/x86_64/docker-\$(WEAVEEXEC_DOCKER_VERSION).tgz;https://github.com/kodbasen/weave-kube-arm/releases/download/v0.1/docker-1.8.2.tgz;" "${i}"
   done
 }
 
 wka:remove_race() {
-  for i in $( grep -r -l "\-race" $WORKDIR ); do
+  for i in $( grep -r -l "\-race" $WEAVEDIR ); do
     wka:log "removing golang:s -race parameter (not supported on ARM) in $i"
     sed -i "s;-race;;" "${i}"
   done
@@ -112,7 +113,7 @@ wka:remove_race() {
 
 wka:fix_goarch() {
   host_arch=$(wka:host_arch)
-  for i in $( grep -r -l "GOARCH=amd64" $WORKDIR ); do
+  for i in $( grep -r -l "GOARCH=amd64" $WEAVEDIR ); do
     wka:log "replacing GOARCH in $i"
     sed -i "s;GOARCH=amd64;GOARCH=$host_arch;" "${i}"
   done
@@ -122,10 +123,10 @@ wka:sanity_check() {
   set +e
   wka:log "sanity check"
   wka:log "host arch: $(wka:host_arch)"
-  grep -r -E "weaveworks/(weave|weaveexec|weavedb|weavebuild|weave-kube|weave-npc):" $WORKDIR
-  grep -r -E "(DOCKERHUB_USER|DH_ORG)(=|:-|^(=$))" $WORKDIR
-  grep -r "FROM.*weaveworks/" $WORKDIR
-  grep -r "GOARCH=amd64" $WORKDIR
+  grep -r -E "weaveworks/(weave|weaveexec|weavedb|weavebuild|weave-kube|weave-npc):" $WEAVEDIR
+  grep -r -E "(DOCKERHUB_USER|DH_ORG)(=|:-|^(=$))" $WEAVEDIR
+  grep -r "FROM.*weaveworks/" $WEAVEDIR
+  grep -r "GOARCH=amd64" $WEAVEDIR
   set -e
 }
 
@@ -143,8 +144,8 @@ wka:delete_images() {
 
 wka:build_weave-kube() {
   wka:log "starting building weave-kube..."
-  cd ${WORKDIR}/weave-kube
-  ${WORKDIR}/weave-kube/build.sh
+  cd $WEAVEDIR/weave-kube
+  $WEAVEDIR/weave-kube/build.sh
   cd ${BASEDIR}
   wka:log "done building weave-kube..."
 }
@@ -170,10 +171,10 @@ fi
 wka:sanity_check
 
 wka:log "starting building weave..."
-make -C $WORKDIR/src/github.com/weaveworks/weave
+make -C $WEAVEDIR/weave
 wka:log "done building weave"
 wka:log "starting building weave-npc..."
-GOPATH=$GOPATH make -C $WORKDIR/src/github.com/weaveworks/weave-npc image
+GOPATH=$GOPATH make -C $WEAVEDIR/weave-npc image
 wka:log "done building weave-npc"
 wka:log "starting building weave-kube..."
 wka:build_weave-kube
