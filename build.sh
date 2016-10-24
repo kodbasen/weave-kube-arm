@@ -158,7 +158,6 @@ if [ ! -d "$WORKDIR" ]; then
   wka:clone "weave"
   wka:clone "weave-kube"
   wka:clone "weave-npc"
-  wka:clone_k8s
   wka:replace_image_in_files "golang:1.5.2" "armhfbuild/golang:1.5.3"
   wka:replace_image_in_files "weaveworks" "kodbasen"
   wka:replace_image_in_files "alpine" "armhfbuild/alpine"
