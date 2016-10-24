@@ -60,7 +60,7 @@ wka:clone() {
   fi
   wka:log "cloning $1"
   git clone https://github.com/weaveworks/$1 $WORKDIR/$1
-  git checkout $WEAVE_VERSION
+  git -C $WORKDIR/$1 checkout $WEAVE_VERSION
 }
 
 wka:replace_image_in_files() {
