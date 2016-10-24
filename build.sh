@@ -144,19 +144,22 @@ wka:build_weave-kube() {
   wka:log "done building weave-kube..."
 }
 
-wka:init
+
 #wka:delete_images
-wka:clone "weave"
-wka:clone "weave-kube"
-wka:clone "weave-npc"
-wka:replace_image_in_files "golang:1.5.2" "armhfbuild/golang:1.5.3"
-wka:replace_image_in_files "weaveworks" "kodbasen"
-wka:replace_image_in_files "alpine" "armhfbuild/alpine"
-wka:replace_dockerhub_user_in_files
-wka:replace_image_in_shell_files
-wka:replace_docker_dist_url_in_files
-wka:remove_race
-wka:fix_goarch
+if [ ! -d "$WORKDIR" ]; then
+  wka:init
+  wka:clone "weave"
+  wka:clone "weave-kube"
+  wka:clone "weave-npc"
+  wka:replace_image_in_files "golang:1.5.2" "armhfbuild/golang:1.5.3"
+  wka:replace_image_in_files "weaveworks" "kodbasen"
+  wka:replace_image_in_files "alpine" "armhfbuild/alpine"
+  wka:replace_dockerhub_user_in_files
+  wka:replace_image_in_shell_files
+  wka:replace_docker_dist_url_in_files
+  wka:remove_race
+  wka:fix_goarch
+fi
 
 wka:sanity_check
 
