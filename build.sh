@@ -8,7 +8,7 @@ set -e
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 WORKDIR=$BASEDIR/.work
 ARCH=${ARCH:-arm}
-WEAVE_VERSION=v1.7.2
+WEAVE_VERSION="v1.7.2"
 
 wka:init() {
   mkdir -p $WORKDIR
