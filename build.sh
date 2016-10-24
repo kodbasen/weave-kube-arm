@@ -60,7 +60,9 @@ wka:log() {
 wka:clone_k8s() {
   wka:log "cloning k8s"
   git clone https://github.com/kubernetes/kubernetes.git $WORKDIR/src/src/k8s.io/kubernetes
+  rm -rf $WORKDIR/src/src/k8s.io/kubernetes/vendor
   git -C $WORKDIR/src/src/k8s.io/kubernetes checkout -b $K8S_VERSION $K8S_VERSION
+  git -C $WORKDIR/src/src/k8s.io/kubernetes checkout -- vendor
 }
 
 wka:clone() {
