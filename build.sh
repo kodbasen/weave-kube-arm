@@ -57,18 +57,16 @@ wka:log() {
   done
 }
 
-wka:clone_k8s() {
-  wka:log "cloning k8s"
-  git clone https://github.com/kubernetes/kubernetes.git $WORKDIR/src/src/k8s.io/kubernetes
-  rm -rf $WORKDIR/src/src/k8s.io/kubernetes/vendor
-  git -C $WORKDIR/src/src/k8s.io/kubernetes checkout -b $K8S_VERSION $K8S_VERSION
-  git -C $WORKDIR/src/src/k8s.io/kubernetes checkout -- vendor
-}
-
 wka:clone() {
   wka:log "cloning $1"
   git clone https://github.com/weaveworks/$1 $WEAVEDIR/$1
   git -C $WEAVEDIR/$1 checkout $WEAVE_VERSION
+}
+
+wka:clone_k8s() {
+  wka:log "cloning k8s"
+  git clone https://github.com/kubernetes/kubernetes.git $GOPATH/src/k8s.io/kubernetes
+  git -C $GOPATH/src/k8s.io/kubernetes checkout $K8S_VERSION
 }
 
 wka:replace_image_in_files() {
@@ -160,6 +158,7 @@ if [ ! -d "$WORKDIR" ]; then
   wka:clone "weave"
   wka:clone "weave-kube"
   wka:clone "weave-npc"
+  wka:clone_k8s
   wka:replace_image_in_files "golang:1.5.2" "armhfbuild/golang:1.5.3"
   wka:replace_image_in_files "weaveworks" "kodbasen"
   wka:replace_image_in_files "alpine" "armhfbuild/alpine"
@@ -173,11 +172,13 @@ fi
 wka:sanity_check
 
 wka:log "starting building weave..."
-make -C $WEAVEDIR/weave
+#make -C $WEAVEDIR/weave
 wka:log "done building weave"
 wka:log "starting building weave-npc..."
-GOPATH=$GOPATH make -C $WEAVEDIR/weave-npc image
+cd $WEAVEDIR/weave-npc
+#GOPATH=$GOPATH make image
 wka:log "done building weave-npc"
 wka:log "starting building weave-kube..."
-wka:build_weave-kube
+#wka:build_weave-kube
 wka:log "done building weave-kube"
+cd $BASEDIR
