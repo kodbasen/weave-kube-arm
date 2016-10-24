@@ -7,9 +7,41 @@ set -e
 ################################################################################
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 WORKDIR=$BASEDIR/.work
+ARCH=${ARCH:-arm}
 
 wka:init() {
   mkdir -p $WORKDIR
+}
+
+wka:host_arch() {
+  local host_os
+  local host_arch
+  case "$(uname -s)" in
+    Linux)
+      host_os=linux;;
+    *)
+      kube::log::fatal "unsupported host OS, must be linux.";;
+  esac
+
+  case "$(uname -m)" in
+    x86_64*)
+      host_arch=amd64;;
+    i?86_64*)
+      host_arch=amd64;;
+    amd64*)
+      host_arch=amd64;;
+    aarch64*)
+      host_arch=arm64;;
+    arm64*)
+      host_arch=arm64;;
+    arm*)
+      host_arch=arm;;
+    ppc64le*)
+      host_arch=ppc64le;;
+    *)
+      sloop:log:fatal "unsupported host arch, must be x86_64, arm, arm64 or ppc64le.";;
+  esac
+  echo "$host_arch"
 }
 
 wka:log() {
@@ -71,10 +103,21 @@ wka:remove_race() {
   done
 }
 
+wka:fix_goarch() {
+  host_arch=$(wka:host_arch)
+  for i in $( grep -r -l "GOARCH=amd64" $WORKDIR ); do
+    wka:log "replacing GOARCH in $i"
+    sed -i "s;GOARCH=amd64;GOARCH=$host_arch;" "${i}"
+  done
+}
+
 wka:sanity_check() {
+  wka:log "sanity check"
+  wka:log "host arch: $(wka:host_arch)"
   grep -r -E "weaveworks/(weave|weaveexec|weavedb|weavebuild|weave-kube|weave-npc):" $WORKDIR
   grep -r -E "(DOCKERHUB_USER|DH_ORG)(=|:-|^(=$))" $WORKDIR
   grep -r "FROM.*weaveworks/" $WORKDIR
+  grep -r "GOARCH=amd64" $WORKDIR
 }
 
 wka:delete_images() {
@@ -88,7 +131,7 @@ wka:delete_images() {
 wka:build_weave-kube() {
   cd ${WORKDIR}/weave-kube
   ${WORKDIR}/weave-kube/build.sh
-  cd ${WORKDIR}
+  cd ${BASEDIR}
 }
 
 wka:init
@@ -103,10 +146,11 @@ wka:replace_dockerhub_user_in_files
 wka:replace_image_in_shell_files
 wka:replace_docker_dist_url_in_files
 wka:remove_race
+wka:fix_goarch
 
 wka:sanity_check
 
 
-#make -C ${WORKDIR}/weave
-#make -C ${WORKDIR}/weave-npc
-#wka:build_weave-kube
+make -C ${WORKDIR}/weave
+make -C ${WORKDIR}/weave-npc
+wka:build_weave-kube
