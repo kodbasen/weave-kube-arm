@@ -171,13 +171,13 @@ fi
 wka:sanity_check
 
 wka:log "starting building weave..."
-#make -C $WEAVEDIR/weave
+make -C $WEAVEDIR/weave
 wka:log "done building weave"
 wka:log "starting building weave-npc..."
 cd $WEAVEDIR/weave-npc
-#GOPATH=$GOPATH make image
+GOPATH=$GOPATH make image
 wka:log "done building weave-npc"
 wka:log "starting building weave-kube..."
-#wka:build_weave-kube
+wka:build_weave-kube
 wka:log "done building weave-kube"
 cd $BASEDIR
