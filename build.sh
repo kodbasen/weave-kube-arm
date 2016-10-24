@@ -9,6 +9,8 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 WORKDIR=$BASEDIR/.work
 ARCH=${ARCH:-arm}
 WEAVE_VERSION="v1.7.2"
+K8S_VERSION="v1.4.0"
+GOPATH=$WORKDIR
 
 wka:init() {
   mkdir -p $WORKDIR
@@ -54,13 +56,15 @@ wka:log() {
   done
 }
 
+wka:clone_k8s() {
+  wka:log "cloning k8s"
+  git clone -b $K8S_VERSION https://github.com/kubernetes/kubernetes.git $WORKDIR/src/src/k8s.io/kubernetes
+}
+
 wka:clone() {
-  if [ -d "$WORKDIR/$1" ]; then
-    return
-  fi
   wka:log "cloning $1"
-  git clone https://github.com/weaveworks/$1 $WORKDIR/$1
-  git -C $WORKDIR/$1 checkout $WEAVE_VERSION
+  git clone https://github.com/weaveworks/$1 $WORKDIR/src/github.com/weaveworks/$1
+  git -C $WORKDIR/src/github.com/weaveworks/$1 checkout $WEAVE_VERSION
 }
 
 wka:replace_image_in_files() {
@@ -148,6 +152,7 @@ wka:build_weave-kube() {
 #wka:delete_images
 if [ ! -d "$WORKDIR" ]; then
   wka:init
+  wka:clone_k8s
   wka:clone "weave"
   wka:clone "weave-kube"
   wka:clone "weave-npc"
@@ -164,6 +169,7 @@ fi
 wka:sanity_check
 
 wka:log "starting building weave..."
-make -C ${WORKDIR}/weave
-GOPATH=${WORKDIR}/weave-npc make -C ${WORKDIR}/weave-npc image
+#make -C $WORKDIR/src/github.com/weaveworks/weave
+#GOPATH=$GOPATH go get github.com/tools/godep
+GOPATH=$GOPATH make -C $WORKDIR/src/github.com/weaveworks/weave-npc image
 #wka:build_weave-kube
