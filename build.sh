@@ -58,7 +58,8 @@ wka:log() {
 
 wka:clone_k8s() {
   wka:log "cloning k8s"
-  git clone -b $K8S_VERSION https://github.com/kubernetes/kubernetes.git $WORKDIR/src/src/k8s.io/kubernetes
+  git clone https://github.com/kubernetes/kubernetes.git $WORKDIR/src/src/k8s.io/kubernetes
+  git -C $WORKDIR/src/src/k8s.io/kubernetes checkout -b $K8S_VERSION $K8S_VERSION
 }
 
 wka:clone() {
@@ -169,7 +170,11 @@ fi
 wka:sanity_check
 
 wka:log "starting building weave..."
-#make -C $WORKDIR/src/github.com/weaveworks/weave
-#GOPATH=$GOPATH go get github.com/tools/godep
+make -C $WORKDIR/src/github.com/weaveworks/weave
+wka:log "done building weave"
+wka:log "starting building weave-npc..."
 GOPATH=$GOPATH make -C $WORKDIR/src/github.com/weaveworks/weave-npc image
-#wka:build_weave-kube
+wka:log "done building weave-npc"
+wka:log "starting building weave-kube..."
+wka:build_weave-kube
+wka:log "done building weave-kube"
