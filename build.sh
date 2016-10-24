@@ -160,5 +160,5 @@ wka:sanity_check
 
 wka:log "starting building weave..."
 make -C ${WORKDIR}/weave
-make -C ${WORKDIR}/weave-npc image
+GOPATH=${WORKDIR}/weave-npc make -C ${WORKDIR}/weave-npc image
 #wka:build_weave-kube
