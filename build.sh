@@ -20,7 +20,7 @@ wka:host_arch() {
     Linux)
       host_os=linux;;
     *)
-      kube::log::fatal "unsupported host OS, must be linux.";;
+      wka:log "unsupported host OS, must be linux.";;
   esac
 
   case "$(uname -m)" in
@@ -39,7 +39,7 @@ wka:host_arch() {
     ppc64le*)
       host_arch=ppc64le;;
     *)
-      sloop:log:fatal "unsupported host arch, must be x86_64, arm, arm64 or ppc64le.";;
+      wka:log "unsupported host arch, must be x86_64, arm, arm64 or ppc64le.";;
   esac
   echo "$host_arch"
 }
@@ -112,26 +112,34 @@ wka:fix_goarch() {
 }
 
 wka:sanity_check() {
+  set +e
   wka:log "sanity check"
   wka:log "host arch: $(wka:host_arch)"
   grep -r -E "weaveworks/(weave|weaveexec|weavedb|weavebuild|weave-kube|weave-npc):" $WORKDIR
   grep -r -E "(DOCKERHUB_USER|DH_ORG)(=|:-|^(=$))" $WORKDIR
   grep -r "FROM.*weaveworks/" $WORKDIR
   grep -r "GOARCH=amd64" $WORKDIR
+  set -e
 }
 
 wka:delete_images() {
-  docker rmi `docker images -q kodbasen/weave:latest`
-  docker rmi `docker images -q kodbasen/plugin:latest`
-  docker rmi `docker images -q kodbasen/weaveexec:latest`
-  docker rmi `docker images -q kodbasen/weavedb:latest`
-  docker rmi `docker images -q kodbasen/weavebuild:latest`
+  set +e
+  docker rmi `docker images -q kodbasen/weave-kube§:latest` > /dev/null 2>&1
+  docker rmi `docker images -q kodbasen/weave-npc:latest` > /dev/null 2>&1
+  docker rmi `docker images -q kodbasen/weave:latest` > /dev/null 2>&1
+  docker rmi `docker images -q kodbasen/plugin:latest` > /dev/null 2>&1
+  docker rmi `docker images -q kodbasen/weavedb:latest` > /dev/null 2>&1
+  docker rmi `docker images -q kodbasen/weaveexec:latest` > /dev/null 2>&1
+  docker rmi `docker images -q kodbasen/weavebuild:latest` > /dev/null 2>&1
+  set -e
 }
 
 wka:build_weave-kube() {
+  wka:log "starting building weave-kube..."
   cd ${WORKDIR}/weave-kube
   ${WORKDIR}/weave-kube/build.sh
   cd ${BASEDIR}
+  wka:log "done building weave-kube..."
 }
 
 wka:init
@@ -150,7 +158,8 @@ wka:fix_goarch
 
 wka:sanity_check
 
-
+wka:log "starting building weave..."
 make -C ${WORKDIR}/weave
+wka:log "starting building weave-npc..."
 make -C ${WORKDIR}/weave-npc
 wka:build_weave-kube
