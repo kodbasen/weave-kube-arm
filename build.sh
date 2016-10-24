@@ -8,6 +8,7 @@ set -e
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 WORKDIR=$BASEDIR/.work
 ARCH=${ARCH:-arm}
+WEAVE_VERSION=v1.7.2
 
 wka:init() {
   mkdir -p $WORKDIR
@@ -59,6 +60,7 @@ wka:clone() {
   fi
   wka:log "cloning $1"
   git clone https://github.com/weaveworks/$1 $WORKDIR/$1
+  git checkout $WEAVE_VERSION
 }
 
 wka:replace_image_in_files() {
