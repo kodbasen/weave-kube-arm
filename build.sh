@@ -101,6 +101,7 @@ wka:replace_docker_dist_url_in_files() {
   for i in $( grep -r -l --include=Makefile "builds/Linux/x86_64" $WEAVEDIR ); do
     wka:log "replacing docker dist url in $i"
     sed -i "s;https://get.docker.com/builds/Linux/x86_64/docker-\$(WEAVEEXEC_DOCKER_VERSION).tgz;https://github.com/kodbasen/weave-kube-arm/releases/download/v0.1/docker-1.8.2.tgz;" "${i}"
+    sed -i "s;curl -o;curl -Lo;" "${i}"
   done
 }
 
@@ -168,8 +169,6 @@ if [ ! -d "$WORKDIR" ]; then
   wka:fix_goarch
 fi
 
-wka:sanity_check
-
 wka:log "starting building weave..."
 make -C $WEAVEDIR/weave
 wka:log "done building weave"
@@ -177,7 +176,5 @@ wka:log "starting building weave-npc..."
 cd $WEAVEDIR/weave-npc
 GOPATH=$GOPATH make image
 wka:log "done building weave-npc"
-wka:log "starting building weave-kube..."
 wka:build_weave-kube
-wka:log "done building weave-kube"
 cd $BASEDIR
